@@ -35,7 +35,6 @@ export default function FindReplaceForm({
           : escapeStringRegexp(searchString);
         pattern = isMatchingWholeWords ? `\\b${pattern}\\b` : pattern;
         const regex = new RegExp(pattern, isCaseSensitive ? "g" : "gi");
-        console.log("new regex:" + regex.source);
         handleSetRegEx(regex);
         setIsValidRegex(true);
       } catch {
