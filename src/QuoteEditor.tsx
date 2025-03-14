@@ -38,6 +38,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
       });
   }, [editMade, readToken]);
   if (items.length === 0) return <h1>Loading Quotes</h1>;
+  if (items.length === 1 && items[0] === "here are no quotes added") return <h2>No quotes found, make sure you have the correct tokens</h2>
 
   const handleEditSave = (formData: FormData) => {
     SubmitQuoteChange(editToken, isAdd, `${formData.get("quoteText")}`, quoteNumber).then(
