@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://matt-scudder.github.io/quote-editor",
+  "homepage": "https://matt-scudder.github.io/quote-editor/",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build --base=/quote-editor/",
     "lint": "eslint .",
     "preview": "vite preview"
   },
