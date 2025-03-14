@@ -59,10 +59,6 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
     setSelectedIndex(-1);
   };
 
-  const handleReplace = () => {
-    setShowReplaceModal(true);
-  };
-
   const handleConfirmReplace = () => {
     const quotesToReplace = items
       .map(
@@ -74,7 +70,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
       return new Promise((resolve) =>{
         setTimeout(() => {
           resolve(SubmitQuoteChange(editToken, false, quote.quoteText, quote.num).then(() => setNumSubmitting(i+1)));
-        }, (500*i) + Math.ceil(Math.random()*200));});
+        }, (400*i) + Math.ceil(Math.random()*200));});
       });
 
     Promise.all(promises).then(() => {
@@ -94,8 +90,8 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
           <h1>Find/Replace</h1>
           <FindReplaceForm
             handleSetRegEx={setSearchRegEx}
-            handleReplaceChange={setReplaceText}
-            handleReplace={handleReplace}
+            handleReplaceTextChange={setReplaceText}
+            handleReplaceClick={() => setShowReplaceModal(true)}
             isResultFound={items.some((entry) => {if (searchRegEx !=null) searchRegEx.lastIndex = 0; return searchRegEx?.test(entry)})}
           />
         </Col>

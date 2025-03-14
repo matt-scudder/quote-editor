@@ -10,15 +10,15 @@ import {
 } from "react-bootstrap";
 interface Props {
   handleSetRegEx: (searchRegEx: RegExp | undefined) => void;
-  handleReplaceChange: (replaceText: string) => void;
-  handleReplace: () => void;
+  handleReplaceTextChange: (replaceText: string) => void;
+  handleReplaceClick: () => void;
   isResultFound: boolean;
 }
 
 export default function FindReplaceForm({
   handleSetRegEx,
-  handleReplaceChange,
-  handleReplace,
+  handleReplaceTextChange: handleReplaceChange,
+  handleReplaceClick,
   isResultFound,
 }: Props) {
   const [isValidRegex, setIsValidRegex] = useState(false);
@@ -30,16 +30,14 @@ export default function FindReplaceForm({
   useEffect(() => {
     if (searchString) {
       try {
-        let pattern = isUsingRegex
-          ? searchString
-          : escapeStringRegexp(searchString);
+        let pattern = isUsingRegex ? searchString : escapeStringRegexp(searchString);
         pattern = isMatchingWholeWords ? `\\b${pattern}\\b` : pattern;
         const regex = new RegExp(pattern, isCaseSensitive ? "g" : "gi");
-        handleSetRegEx(regex);
         setIsValidRegex(true);
+        handleSetRegEx(regex);
       } catch {
-        handleSetRegEx(undefined);
         setIsValidRegex(false);
+        handleSetRegEx(undefined);
       }
     } else {
       setIsValidRegex(false);
@@ -55,7 +53,7 @@ export default function FindReplaceForm({
   
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    handleReplace();
+    handleReplaceClick();
   }
 
   const isValid = isValidRegex && isResultFound;
