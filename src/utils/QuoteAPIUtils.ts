@@ -12,6 +12,5 @@ export default function SubmitQuoteChange(
     }
 
     requestUrl = requestUrl + encodeURIComponent(newQuoteText);
-    console.log(requestUrl);
     return fetch(requestUrl, { mode: "no-cors" });
 }

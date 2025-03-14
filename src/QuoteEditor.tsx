@@ -77,7 +77,6 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
         }, (500*i) + Math.ceil(Math.random()*200));});
       });
 
-    console.log(quotesToReplace);
     Promise.all(promises).then(() => {
       setNumSubmitting(quotesToReplace.length);
       setTimeout(() => {
