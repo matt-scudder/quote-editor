@@ -86,7 +86,7 @@ function ConfirmReplaceModal({
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={() => saveSelected(replaceableQuotes)}>Submit Changes</Button>
+        <Button disabled={!replaceableQuotes.some(rq => rq.isSelected)} onClick={() => saveSelected(replaceableQuotes)}>Submit Changes</Button>
       </Modal.Footer>
       {submittingInfo.total >= 0 && <ProgressBar className="m-2" animated now={submittingInfo.total*100/numSubmitting}></ProgressBar>}
     </Modal>
