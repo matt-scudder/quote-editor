@@ -19,7 +19,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
   const [items, setItems] = useState<string[]>([]);
   const [searchRegEx, setSearchRegEx] = useState<RegExp>();
   const [replaceText, setReplaceText] = useState("");
-  const [numSubmitting, setNumSubmitting] = useState(-1);
+  const [submittingInfo, setSubmittingInfo] = useState({current: -1, total: -1});
   const [isReloading, setIsReloading] = useState(true);
 
   const quoteNumber = selectedIndex + 1;
@@ -62,25 +62,29 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
     setSelectedIndex(-1);
   };
 
-  const handleConfirmReplace = () => {
-    const quotesToReplace = items
+  const handleConfirmReplace = (selectedQuotes: {quoteText: string, quoteNumber: number}[]) => {
+    const quotesToReplace = selectedQuotes
       .map(
-        (entry, i) =>
-          {if (searchRegEx?.test(entry)) {return {num: i + 1,  quoteText: entry.replace(searchRegEx, replaceText)}}}
-      ).filter((item) => item != undefined);
-      setNumSubmitting(0);
-    const promises = quotesToReplace.map((quote, i) =>{
+        entry =>
+          {return {quoteNumber: entry.quoteNumber,  replacementText: entry.quoteText.replace(searchRegEx!, replaceText)}}
+      );
+    setSubmittingInfo({current: -1, total: 0})
+    const promises = quotesToReplace.map((rq, i) =>{
       return new Promise((resolve) =>{
         setTimeout(() => {
-          resolve(SubmitQuoteChange(editToken, false, quote.quoteText, quote.num).then(() => setNumSubmitting(i+1)));
+          setSubmittingInfo({current: rq.quoteNumber, total: i});
+          resolve(
+            SubmitQuoteChange(editToken, false, rq.replacementText, rq.quoteNumber)
+            .then(() => setSubmittingInfo(val => {return {current: val.current, total: i+1}}))
+          );
         }, (400*i) + Math.ceil(Math.random()*200));});
       });
 
     Promise.all(promises).then(() => {
-      setNumSubmitting(quotesToReplace.length);
+      setTimeout(()=>setSubmittingInfo({current:-1, total: quotesToReplace.length}), 250);
       setTimeout(() => {
         setShowReplaceModal(false);
-        setNumSubmitting(-1);
+        setSubmittingInfo({current: -1, total: -1});
         setEditMade(val => !val);
       }, 700);
     });
@@ -128,15 +132,15 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
         handleClose={handleEditClose}
         handleSave={handleEditSave}
       />
-      <ConfirmReplaceModal
+      {showReplaceModal && <ConfirmReplaceModal
         showModal={showReplaceModal}
         items={items}
         searchPattern={searchRegEx}
         replaceText={replaceText}
-        numSubmitting={numSubmitting}
+        submittingInfo={submittingInfo}
         handleClose={() => setShowReplaceModal(false)}
         handleSave={handleConfirmReplace}
-      ></ConfirmReplaceModal>
+      />}
     </>
   );
 };

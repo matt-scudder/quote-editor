@@ -1,14 +1,15 @@
-import { Button, Col, ListGroup, Modal, ProgressBar, Row, Spinner } from "react-bootstrap";
+import { Button, Col, Form, ListGroup, Modal, ProgressBar, Row, Spinner } from "react-bootstrap";
 import { RenderMatchHighlights } from "./MatchHighlighter";
+import { useEffect, useState } from "react";
 
 interface Props {
   showModal: boolean;
   items: string[];
   searchPattern: RegExp | undefined;
   replaceText: string;
-  numSubmitting: number;
+  submittingInfo: {current: number, total: number};
   handleClose: () => void;
-  handleSave: () => void;
+  handleSave: (selectedQuotes: {quoteText: string, quoteNumber: number}[]) => void;
 }
 
 function ConfirmReplaceModal({
@@ -16,11 +17,34 @@ function ConfirmReplaceModal({
   items,
   searchPattern,
   replaceText,
-  numSubmitting,
+  submittingInfo,
   handleClose,
   handleSave,
 }: Props) {
-  let numReplacing = 0;
+  type ReplaceableQuote = {
+    quoteText: string;
+    quoteNumber: number;
+    isSelected: boolean;
+  }
+
+  const saveSelected = (quotes: ReplaceableQuote[]) => {
+    handleSave(quotes.filter(rq => rq.isSelected)
+    .map(rq => {return {quoteText: rq.quoteText, quoteNumber: rq.quoteNumber}}))
+  }
+
+  const [isSelectedArray, setIsSelectedArray] = useState(new Array(items.length).fill(true));
+  useEffect(() => {
+    setIsSelectedArray(new Array(items.length).fill(true));
+  }, [items, showModal]);
+
+  const replaceableQuotes :ReplaceableQuote[] = items.map((entry, i) =>{
+    searchPattern!.lastIndex = 0;
+    if (searchPattern?.test(entry)){
+      return {quoteNumber:i+1, quoteText: entry, isSelected: isSelectedArray[i]}
+    }
+  }).filter<ReplaceableQuote>(x => x != undefined);
+  const numSubmitting = replaceableQuotes.filter(rq => rq.isSelected).length;
+
   return showModal && (
     <Modal show={showModal} size="lg" onHide={handleClose}>
       <Modal.Header closeButton>
@@ -28,30 +52,32 @@ function ConfirmReplaceModal({
       </Modal.Header>
       <Modal.Body>
         <ListGroup>
-          {items.map(
-            (entry, i) => {
-              if (searchPattern?.test(entry)) {
-                numReplacing++;
+          {replaceableQuotes.map(({quoteNumber, quoteText, isSelected}: ReplaceableQuote) => {
                 return (
-                <ListGroup.Item key={i+1}>
+                <ListGroup.Item key={quoteNumber} className={isSelected ? "" : "text-muted"}>
                   <Row className="align-items-center">
-                    <Col xs="auto">{i+1}.</Col>
-                    <Col className="px-2">
+                    <Col xs="auto" className="pe-1">{quoteNumber}.</Col>
+                    <Col className="px-2" >
                       <span className="font-monospace">- </span>
-                      {RenderMatchHighlights(entry, searchPattern, (text) => (
-                        <span className="text-bg-danger">{text}</span>
+                      {RenderMatchHighlights(quoteText, searchPattern, (text) => (
+                        isSelected ? <span className="text-bg-danger">{text}</span> : text
                       ))}
                       <hr className="m-0" />
                       <span className="font-monospace">+ </span>
-                      {RenderMatchHighlights(entry, searchPattern, () => (
-                        <span className="text-bg-primary bg-gradient">{replaceText}</span>
+                      {RenderMatchHighlights(quoteText, searchPattern, (text) => (
+                        isSelected ? <span className="text-bg-primary bg-gradient">{replaceText}</span> : text
                       ))}
                     </Col>
-                    {numSubmitting == numReplacing && <Col xs="auto"><Spinner size="sm" animation="border" /></Col>}
+                    {submittingInfo.current == quoteNumber ? 
+                    ( <Col xs="auto"><Spinner size="sm" animation="border" /></Col> ) 
+                    :
+                    ( 
+                      <Col xs="auto"><Form.Check disabled={submittingInfo.total >= 0} defaultChecked={isSelected} onChange={e => setIsSelectedArray(isSelectedArray.map((v,idx) => idx === quoteNumber-1 ? e.target.checked : v))}/></Col> 
+                    )}
                   </Row>
                 </ListGroup.Item>
-              );}
-            })}
+              )}
+            )}
         </ListGroup>
         
 
@@ -60,9 +86,9 @@ function ConfirmReplaceModal({
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Submit Changes</Button>
+        <Button onClick={() => saveSelected(replaceableQuotes)}>Submit Changes</Button>
       </Modal.Footer>
-      {numSubmitting >= 0 && <ProgressBar className="m-2" animated now={numSubmitting*100/numReplacing}></ProgressBar>}
+      {submittingInfo.total >= 0 && <ProgressBar className="m-2" animated now={submittingInfo.total*100/numSubmitting}></ProgressBar>}
     </Modal>
   );
 }
