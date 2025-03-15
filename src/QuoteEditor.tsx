@@ -9,9 +9,10 @@ import SubmitQuoteChange from "./utils/QuoteAPIUtils";
 interface Props{
   readToken: string,
   editToken: string,
+  setHasTokenError: (hadError: boolean) => void;
 }
 
-const QuoteEditor = ({readToken, editToken}: Props) => {
+const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -40,7 +41,9 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
         setTimeout(() => setIsReloading(false), 150);
       });
   }, [editMade, readToken]);
-  if (items.length === 1 && items[0] === "There are no quotes added") return <h2>No quotes found, make sure you have the correct tokens</h2>
+  if (items.length === 1 && items[0] === "There are no quotes added") { 
+    setHasTokenError(true);
+  }
 
   const handleEditSave = (formData: FormData) => {
     SubmitQuoteChange(editToken, isAdd, `${formData.get("quoteText")}`, quoteNumber).then(
