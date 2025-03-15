@@ -55,19 +55,18 @@ function ConfirmReplaceModal({
                     <Col xs="auto" className="pe-1">{quoteNumber}.</Col>
                     <Col className="px-2" >
                       <span className="font-monospace">- </span>
-                      {RenderMatchHighlights(quoteText, searchPattern, (text) => (
-                        isSelected ? <span className="text-bg-danger">{text}</span> : text
-                      ))}
+                      {isSelected ?
+                        RenderMatchHighlights(quoteText, searchPattern, (text) => <span className="text-bg-danger">{text}</span>)
+                      : quoteText}
                       <hr className="m-0" />
                       <span className="font-monospace">+ </span>
-                      {RenderMatchHighlights(quoteText, searchPattern, (text) => (
-                        isSelected ? <span className="text-bg-primary bg-gradient">{replaceText}</span> : text
-                      ))}
+                      {isSelected ? 
+                        RenderMatchHighlights(quoteText, searchPattern, () => <span className="text-bg-primary bg-gradient">{replaceText}</span>)
+                      : quoteText }
                     </Col>
-                    {submittingInfo.current == quoteNumber ? 
-                    ( <Col xs="auto"><Spinner size="sm" animation="border" /></Col> ) 
-                    :
-                    ( 
+                    {submittingInfo.current == quoteNumber ? ( 
+                      <Col xs="auto"><Spinner size="sm" animation="border" /></Col>
+                    ) : (
                       <Col xs="auto"><Form.Check 
                         disabled={submittingInfo.total >= 0} 
                         defaultChecked={isSelected} 
