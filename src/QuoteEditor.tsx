@@ -77,7 +77,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
             SubmitQuoteChange(editToken, false, rq.replacementText, rq.quoteNumber)
             .then(() => setSubmittingInfo(val => {return {current: val.current, total: i+1}}))
           );
-        }, (400*i) + Math.ceil(Math.random()*200));});
+        }, 400*i )});
       });
 
     Promise.all(promises).then(() => {
