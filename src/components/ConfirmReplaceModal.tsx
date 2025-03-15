@@ -3,7 +3,6 @@ import { RenderMatchHighlights } from "./MatchHighlighter";
 import { useState } from "react";
 
 interface Props {
-  showModal: boolean;
   items: string[];
   searchPattern: RegExp | undefined;
   replaceText: string;
@@ -13,7 +12,6 @@ interface Props {
 }
 
 function ConfirmReplaceModal({
-  showModal,
   items,
   searchPattern,
   replaceText,
@@ -41,8 +39,8 @@ function ConfirmReplaceModal({
     }).filter<ReplaceableQuote>(x => x != undefined)
   );
 
-  return showModal && (
-    <Modal show={showModal} size="lg" onHide={handleClose}>
+  return (
+    <Modal size="lg" onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Confirm Quote Replacements</Modal.Title>
       </Modal.Header>
@@ -67,11 +65,15 @@ function ConfirmReplaceModal({
                     {submittingInfo.current == quoteNumber ? ( 
                       <Col xs="auto"><Spinner size="sm" animation="border" /></Col>
                     ) : (
-                      <Col xs="auto"><Form.Check 
-                        disabled={submittingInfo.total >= 0} 
-                        defaultChecked={isSelected} 
-                        onChange={e => setReplaceableQuotes(rqlist => rqlist.map((rq) => rq.quoteNumber === quoteNumber ? {...rq, isSelected: e.target.checked} : rq))}
-                      /></Col> 
+                      <Col xs="auto">
+                        <Form.Check 
+                          disabled={submittingInfo.total >= 0} 
+                          defaultChecked={isSelected} 
+                          onChange={e => 
+                            setReplaceableQuotes(rqlist => rqlist.map((rq) => rq.quoteNumber === quoteNumber ? {...rq, isSelected: e.target.checked} : rq))
+                          }
+                        />
+                      </Col> 
                     )}
                   </Row>
                 </ListGroup.Item>
@@ -85,9 +87,15 @@ function ConfirmReplaceModal({
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button disabled={!replaceableQuotes.some(rq => rq.isSelected)} onClick={() => saveSelected(replaceableQuotes)}>Submit Changes</Button>
+        <Button 
+          disabled={!replaceableQuotes.some(rq => rq.isSelected)} 
+          onClick={() => saveSelected(replaceableQuotes)}>
+            Submit Changes
+        </Button>
       </Modal.Footer>
-      {submittingInfo.total >= 0 && <ProgressBar className="m-2" animated now={submittingInfo.total*100/replaceableQuotes.filter(rq => rq.isSelected).length}></ProgressBar>}
+      {submittingInfo.total >= 0 && 
+        <ProgressBar className="m-2" animated now={submittingInfo.total*100/replaceableQuotes.filter(rq => rq.isSelected).length} />
+      }
     </Modal>
   );
 }
