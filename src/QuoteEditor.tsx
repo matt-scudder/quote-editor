@@ -1,9 +1,9 @@
-import { Button, Col, Row } from "react-bootstrap";
+import { Button, Col, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import QuoteList from "./components/QuoteList";
 import EditModal from "./components/EditModal";
 import { useEffect, useState } from "react";
 import FindReplaceForm from "./components/FindReplaceForm";
-import ReplaceModal from "./components/ReplaceModal";
+import ConfirmReplaceModal from "./components/ConfirmReplaceModal";
 import SubmitQuoteChange from "./utils/QuoteAPIUtils";
 
 interface Props{
@@ -20,12 +20,14 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
   const [searchRegEx, setSearchRegEx] = useState<RegExp>();
   const [replaceText, setReplaceText] = useState("");
   const [numSubmitting, setNumSubmitting] = useState(-1);
+  const [isReloading, setIsReloading] = useState(true);
 
   const quoteNumber = selectedIndex + 1;
   const isAdd = selectedIndex === items.length;
   const modalTitle = `${isAdd ? "Add" : "Edit"} Quote ${quoteNumber}`;
 
   useEffect(() => {
+    setIsReloading(true);
     fetch(
       `https://corsproxy.io/?url=https://twitch.center/customapi/quote/list?token=${readToken}`
     )
@@ -33,12 +35,12 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
       .then((text) => {
         console.log("fetching quote list");
         setItems(
-          text.split("\n").map((item) => item.substring(item.indexOf(". ") + 2))
+          text.split("\n").map((item) => item.substring(item.match(/(?<=^[0-9]+\. )/)?.index ?? 0))
         );
+        setTimeout(() => setIsReloading(false), 150);
       });
   }, [editMade, readToken]);
-  if (items.length === 0) return <h1>Loading Quotes</h1>;
-  if (items.length === 1 && items[0] === "here are no quotes added") return <h2>No quotes found, make sure you have the correct tokens</h2>
+  if (items.length === 1 && items[0] === "There are no quotes added") return <h2>No quotes found, make sure you have the correct tokens</h2>
 
   const handleEditSave = (formData: FormData) => {
     SubmitQuoteChange(editToken, isAdd, `${formData.get("quoteText")}`, quoteNumber).then(
@@ -93,11 +95,19 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
             handleSetRegEx={setSearchRegEx}
             handleReplaceTextChange={setReplaceText}
             handleReplaceClick={() => setShowReplaceModal(true)}
-            isResultFound={items.some((entry) => {if (searchRegEx !=null) searchRegEx.lastIndex = 0; return searchRegEx?.test(entry)})}
+            numResultsFound={items.filter((entry) => {if (searchRegEx !=null) searchRegEx.lastIndex = 0; return searchRegEx?.test(entry)}).length}
           />
         </Col>
         <Col className="my-3" sm={12} md={{ span: 7, order: "first" }} xl={{span: 8, order: "first"}}>
-          <h1>Quotes</h1>
+          <Row className="align-items-end">
+            <Col xs="auto"><h1>Quotes</h1></Col>
+            {isReloading && <Col className="px-0 mb-2" xs="auto"><Spinner as={"span"} animation="border"/></Col>}
+            <Col xs className="text-end">
+              <OverlayTrigger placement="auto" delay={120} overlay={<Tooltip>Refresh Quote List</Tooltip>}>
+                <Button className="mb-2 border" variant="outline" onClick={() => setEditMade(val => !val)}>↻</Button>
+              </OverlayTrigger>
+            </Col>
+          </Row>
           <QuoteList
             items={items}
             searchPattern={searchRegEx}
@@ -118,7 +128,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
         handleClose={handleEditClose}
         handleSave={handleEditSave}
       />
-      <ReplaceModal
+      <ConfirmReplaceModal
         showModal={showReplaceModal}
         items={items}
         searchPattern={searchRegEx}
@@ -126,7 +136,7 @@ const QuoteEditor = ({readToken, editToken}: Props) => {
         numSubmitting={numSubmitting}
         handleClose={() => setShowReplaceModal(false)}
         handleSave={handleConfirmReplace}
-      ></ReplaceModal>
+      ></ConfirmReplaceModal>
     </>
   );
 };

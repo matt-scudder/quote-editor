@@ -12,14 +12,14 @@ interface Props {
   handleSetRegEx: (searchRegEx: RegExp | undefined) => void;
   handleReplaceTextChange: (replaceText: string) => void;
   handleReplaceClick: () => void;
-  isResultFound: boolean;
+  numResultsFound: number;
 }
 
 export default function FindReplaceForm({
   handleSetRegEx,
   handleReplaceTextChange: handleReplaceChange,
   handleReplaceClick,
-  isResultFound,
+  numResultsFound,
 }: Props) {
   const [isValidRegex, setIsValidRegex] = useState(false);
   const [searchString, setSearchString] = useState("");
@@ -56,7 +56,7 @@ export default function FindReplaceForm({
     handleReplaceClick();
   }
 
-  const isValid = isValidRegex && isResultFound;
+  const isValid = isValidRegex && numResultsFound > 0;
   return (
     <Form noValidate onSubmit={handleSubmit}>
       <Row>
@@ -108,6 +108,7 @@ export default function FindReplaceForm({
           onChange={(e) => setSearchString(e.target.value)}
           isInvalid={!isValid}
         />
+        {numResultsFound > 0 && <Form.Text className="position-absolute">{`Matches found in ${numResultsFound} ${numResultsFound > 1 ? "quotes" : "quote"}`}</Form.Text>}
         <Form.Control.Feedback className="position-absolute" type="invalid">
           {!searchString ? "Enter a search pattern" : !isValidRegex ? "Invalid RegEx" :  "No results found"}
         </Form.Control.Feedback>

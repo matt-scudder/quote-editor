@@ -37,7 +37,7 @@ const TokenInputForm = ({ submitTokens }: Props) => {
             </Col>
         </Row>
         <Button type='submit' disabled={!isInputValid()}>Load Quote Editor</Button>
-        <Button className='mx-3' variant='outline-warning' disabled={!isInputValid()}><a href={`?readToken=${readToken}&editToken=${editToken}`}>Load with Permalink</a></Button>
+        <Button className='mx-3' variant='outline-warning' disabled={!isInputValid()} href={`?readToken=${readToken}&editToken=${editToken}`}>Load with Permalink</Button>
     </Form>
     </>
   )

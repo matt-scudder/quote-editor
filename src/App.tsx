@@ -13,7 +13,12 @@ function App() {
       {hasParams ? (
         <QuoteEditor readToken={readToken} editToken={editToken} />
       ) : (
-        <TokenInputForm submitTokens={(readToken:string, editToken: string) => {setReadToken(readToken); setEditToken(editToken)}} />
+        <TokenInputForm
+          submitTokens={(readToken: string, editToken: string) => {
+            setReadToken(readToken);
+            setEditToken(editToken);
+          }}
+        />
       )}
     </Container>
   );

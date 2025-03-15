@@ -11,7 +11,7 @@ interface Props {
   handleSave: () => void;
 }
 
-function ReplaceModal({
+function ConfirmReplaceModal({
   showModal,
   items,
   searchPattern,
@@ -67,4 +67,4 @@ function ReplaceModal({
   );
 }
 
-export default ReplaceModal;
+export default ConfirmReplaceModal;
