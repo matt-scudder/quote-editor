@@ -40,7 +40,7 @@ function ConfirmReplaceModal({
   );
 
   return (
-    <Modal size="lg" onHide={handleClose}>
+    <Modal show size="lg" onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Confirm Quote Replacements</Modal.Title>
       </Modal.Header>
