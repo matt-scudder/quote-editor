@@ -27,7 +27,7 @@ function ConfirmReplaceModal({
 
   const saveSelected = (quotes: ReplaceableQuote[]) => {
     handleSave(quotes.filter(rq => rq.isSelected)
-    .map(rq => {return {quoteText: rq.quoteText, quoteNumber: rq.quoteNumber}}))
+    .map(rq => ({quoteText: rq.quoteText, quoteNumber: rq.quoteNumber})))
   }
 
   const [replaceableQuotes, setReplaceableQuotes] = useState<ReplaceableQuote[]>(

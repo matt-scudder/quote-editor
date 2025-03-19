@@ -67,10 +67,7 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
 
   const handleConfirmReplace = (selectedQuotes: {quoteText: string, quoteNumber: number}[]) => {
     const quotesToReplace = selectedQuotes
-      .map(
-        entry =>
-          {return {quoteNumber: entry.quoteNumber,  replacementText: entry.quoteText.replace(searchRegEx!, replaceText)}}
-      );
+      .map(entry => ({quoteNumber: entry.quoteNumber,  replacementText: entry.quoteText.replace(searchRegEx!, replaceText)}));
     setSubmittingInfo({current: -1, total: 0})
     const promises = quotesToReplace.map((rq, i) =>{
       return new Promise((resolve) =>{
@@ -78,7 +75,7 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
           setSubmittingInfo({current: rq.quoteNumber, total: i});
           resolve(
             SubmitQuoteChange(editToken, false, rq.replacementText, rq.quoteNumber)
-            .then(() => setSubmittingInfo(val => {return {current: val.current, total: i+1}}))
+            .then(() => setSubmittingInfo(val => ({current: val.current, total: i+1})))
           );
         }, 400*i )});
       });

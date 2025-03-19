@@ -8,12 +8,8 @@ const TokenInputForm = ({ submitTokens }: Props) => {
     const [readToken, setReadToken] = useState("");
     const [editToken, setEditToken] = useState("");
 
-    const isValidReadToken = (token: string) => {
-        return token.match(/^[A-z|0-9]{8}$/) != null;
-    }
-    const isValidEditToken = (token: string) => {
-        return token.match(/^[A-z|0-9]{16}$/) != null;
-    }
+    const isValidReadToken = (token: string) => (token.match(/^[A-z|0-9]{8}$/) != null);
+    const isValidEditToken = (token: string) => (token.match(/^[A-z|0-9]{16}$/) != null);
     const isInputValid = () => isValidReadToken(readToken) && isValidEditToken(editToken);
 
   return (
