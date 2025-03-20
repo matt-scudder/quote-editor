@@ -8,17 +8,18 @@ import {
   Row,
   Tooltip,
 } from "react-bootstrap";
+import React from "react";
 interface Props {
   handleSetRegEx: (searchRegEx: RegExp | undefined) => void;
   handleReplaceTextChange: (replaceText: string) => void;
-  handleReplaceClick: () => void;
+  setShowReplaceModal: (showReplaceModal: boolean) => void;
   numResultsFound: number;
 }
 
-export default function FindReplaceForm({
+function FindReplaceForm({
   handleSetRegEx,
   handleReplaceTextChange: handleReplaceChange,
-  handleReplaceClick,
+  setShowReplaceModal,
   numResultsFound,
 }: Props) {
   const [isValidRegex, setIsValidRegex] = useState(false);
@@ -53,7 +54,7 @@ export default function FindReplaceForm({
   
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    handleReplaceClick();
+    setShowReplaceModal(true);
   }
 
   const isValid = isValidRegex && numResultsFound > 0;
@@ -108,24 +109,20 @@ export default function FindReplaceForm({
           onChange={(e) => setSearchString(e.target.value)}
           isInvalid={!isValid}
         />
-        {numResultsFound > 0 && <Form.Text className="position-absolute">{`Matches found in ${numResultsFound} ${numResultsFound > 1 ? "quotes" : "quote"}`}</Form.Text>}
+        {numResultsFound > 0 && <Form.Text className="position-absolute">Matches found in {numResultsFound} {numResultsFound > 1 ? "quotes" : "quote"}</Form.Text>}
         <Form.Control.Feedback className="position-absolute" type="invalid">
           {!searchString ? "Enter a search pattern" : !isValidRegex ? "Invalid RegEx" :  "No results found"}
         </Form.Control.Feedback>
       </Form.Group>
       <Form.Group className="my-3" controlId="replaceTextControl">
-        <Col sm={12} md="auto">
-          <Form.Label>Replace With</Form.Label>
-        </Col>
-        <Col>
-          <Form.Control
-            name="replaceText"
-            inputMode="text"
-            autoComplete="off"
-            placeholder="Replacement Text"
-            onChange={(e) => handleReplaceChange(e.target.value)}
-          />
-        </Col>
+        <Form.Label>Replace With</Form.Label>
+        <Form.Control
+          name="replaceText"
+          inputMode="text"
+          autoComplete="off"
+          placeholder="Replacement Text"
+          onChange={(e) => handleReplaceChange(e.target.value)}
+        />
       </Form.Group>
       <Button type="submit" disabled={!isValid}>
         Replace All
@@ -133,3 +130,5 @@ export default function FindReplaceForm({
     </Form>
   );
 }
+
+export default React.memo(FindReplaceForm);

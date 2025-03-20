@@ -1,24 +1,29 @@
+import React from "react";
 import { ReactNode } from "react";
 
-export function RenderMatchHighlights(
-  entry: string,
-  searchRegEx: RegExp | undefined,
-  highlightFunc: (text: string) => ReactNode
-): ReactNode[] {
-  const nodes = new Array<ReactNode>();
+interface Props{
+  quoteText: string;
+  searchRegEx: RegExp | undefined;
+  highlightFunc: (text: string) => ReactNode;
+}
+
+function RenderMatchHighlights({quoteText, searchRegEx, highlightFunc}: Props) {
+  const elementArray = new Array<ReactNode>();
   let cursor = 0;
   if (searchRegEx) {
     searchRegEx.lastIndex = 0;
-    for (const match of entry.matchAll(searchRegEx)) {
+    for (const match of quoteText.matchAll(searchRegEx)) {
       if (match.index > cursor) {
-        nodes.push(entry.substring(cursor, match.index));
+        elementArray.push(quoteText.substring(cursor, match.index));
       }
-      nodes.push(highlightFunc(match[0]));
+      elementArray.push(highlightFunc(match[0]));
       cursor = match.index + match[0].length;
     }
   }
-  if (cursor < entry.length) {
-    nodes.push(entry.substring(cursor));
+  if (cursor < quoteText.length) {
+    elementArray.push(quoteText.substring(cursor));
   }
-  return nodes;
+  return elementArray;
 }
+
+export default React.memo(RenderMatchHighlights);

@@ -1,101 +1,117 @@
-import { Button, Col, Form, ListGroup, Modal, ProgressBar, Row, Spinner } from "react-bootstrap";
-import { RenderMatchHighlights } from "./MatchHighlighter";
-import { useState } from "react";
+import {
+  Button,
+  ListGroup,
+  Modal,
+  ProgressBar,
+} from "react-bootstrap";
+import { useMemo, useState } from "react";
+import QuoteAPIUtils from "../utils/QuoteAPIUtils";
+import ReplacementEntry from "./ReplacementEntry";
+
+export type ReplaceableQuote = {
+  quoteText: string;
+  quoteNumber: number;
+  isSelected: boolean;
+};
 
 interface Props {
   items: string[];
   searchPattern: RegExp | undefined;
   replaceText: string;
-  submittingInfo: {current: number, total: number};
-  handleClose: () => void;
-  handleSave: (selectedQuotes: {quoteText: string, quoteNumber: number}[]) => void;
+  quoteApi: QuoteAPIUtils;
+  hideModal: () => void;
+  refreshQuotes: () => void;
 }
 
 function ConfirmReplaceModal({
   items,
   searchPattern,
   replaceText,
-  submittingInfo,
-  handleClose,
-  handleSave,
+  quoteApi,
+  hideModal,
+  refreshQuotes,
 }: Props) {
-  type ReplaceableQuote = {
-    quoteText: string;
-    quoteNumber: number;
-    isSelected: boolean;
-  }
-
-  const saveSelected = (quotes: ReplaceableQuote[]) => {
-    handleSave(quotes.filter(rq => rq.isSelected)
-    .map(rq => ({quoteText: rq.quoteText, quoteNumber: rq.quoteNumber})))
-  }
-
+  const [currentSubmittingIndex, setCurrentSubmittingIndex] = useState(-1);
+  const [currentSubmittingTotal, setCurrentSubmittingTotal] = useState(-1);
   const [replaceableQuotes, setReplaceableQuotes] = useState<ReplaceableQuote[]>(
-    items.map((entry, i) =>{
+    items.map((entry, i) => {
       searchPattern!.lastIndex = 0;
-      if (searchPattern?.test(entry)){
-        return {quoteNumber:i+1, quoteText: entry, isSelected: true}
+      if (searchPattern?.test(entry)) {
+        return { quoteNumber: i + 1, quoteText: entry, isSelected: true };
       }
-    }).filter<ReplaceableQuote>(x => x != undefined)
+    })
+    .filter<ReplaceableQuote>((x) => x != undefined)
   );
 
+  const totalToSubmit = useMemo(
+    () => replaceableQuotes.filter((rq) => rq.isSelected).length,
+    [replaceableQuotes]
+  );
+
+  const handleConfirmReplace = () => {
+    const quotesToReplace = replaceableQuotes.filter(quote => quote.isSelected);
+    setCurrentSubmittingTotal(0);
+    const promises = quotesToReplace.map((q, i) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          setCurrentSubmittingIndex(q.quoteNumber);
+          resolve(
+            quoteApi.SubmitEditQuote(
+              q.quoteNumber,
+              q.quoteText.replace(searchPattern!, replaceText)
+            ).then(() => setCurrentSubmittingTotal(i + 1))
+          );
+        }, 400 * i);
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      setTimeout(() => setCurrentSubmittingIndex(-1), 250);
+      setTimeout(() => {
+        hideModal();
+        setCurrentSubmittingTotal(-1);
+        refreshQuotes();
+      }, 700);
+    });
+  };
+
   return (
-    <Modal show size="lg" onHide={handleClose}>
+    <Modal show size="lg" onHide={hideModal}>
       <Modal.Header closeButton>
         <Modal.Title>Confirm Quote Replacements</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <ListGroup>
-          {replaceableQuotes.map(({quoteNumber, quoteText, isSelected}: ReplaceableQuote) => {
-                return (
-                <ListGroup.Item key={quoteNumber} className={isSelected ? "" : "text-muted"}>
-                  <Row className="align-items-center">
-                    <Col xs="auto" className="pe-1">{quoteNumber}.</Col>
-                    <Col className="px-2" >
-                      <span className="font-monospace">- </span>
-                      {isSelected ?
-                        RenderMatchHighlights(quoteText, searchPattern, (text) => <span className="text-bg-danger">{text}</span>)
-                      : quoteText}
-                      <hr className="m-0" />
-                      <span className="font-monospace">+ </span>
-                      {isSelected ? 
-                        RenderMatchHighlights(quoteText, searchPattern, () => <span className="text-bg-primary bg-gradient">{replaceText}</span>)
-                      : quoteText }
-                    </Col>
-                    {submittingInfo.current == quoteNumber ? ( 
-                      <Col xs="auto"><Spinner size="sm" animation="border" /></Col>
-                    ) : (
-                      <Col xs="auto">
-                        <Form.Check 
-                          disabled={submittingInfo.total >= 0} 
-                          defaultChecked={isSelected} 
-                          onChange={e => 
-                            setReplaceableQuotes(rqlist => rqlist.map((rq) => rq.quoteNumber === quoteNumber ? {...rq, isSelected: e.target.checked} : rq))
-                          }
-                        />
-                      </Col> 
-                    )}
-                  </Row>
-                </ListGroup.Item>
-              )}
-            )}
+          {replaceableQuotes.map((rq: ReplaceableQuote) => (
+            <ReplacementEntry
+              key={rq.quoteNumber}
+              quote={rq}
+              searchPattern={searchPattern}
+              replaceText={replaceText}
+              currentSubmittingIndex={currentSubmittingIndex}
+              setReplaceableQuotes={setReplaceableQuotes}
+            />
+          ))}
         </ListGroup>
-        
-
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={hideModal}>
           Cancel
         </Button>
-        <Button 
-          disabled={!replaceableQuotes.some(rq => rq.isSelected)} 
-          onClick={() => saveSelected(replaceableQuotes)}>
-            Submit Changes
+        <Button
+          disabled={!replaceableQuotes.some((rq) => rq.isSelected)}
+          onClick={handleConfirmReplace}
+        >
+          Submit Changes
         </Button>
       </Modal.Footer>
-      {submittingInfo.total >= 0 && 
-        <ProgressBar className="m-2" animated now={submittingInfo.total*100/replaceableQuotes.filter(rq => rq.isSelected).length} />
-      }
+      {currentSubmittingTotal >= 0 && (
+        <ProgressBar
+          className="m-2"
+          animated
+          now={(currentSubmittingTotal * 100) / totalToSubmit}
+        />
+      )}
     </Modal>
   );
 }

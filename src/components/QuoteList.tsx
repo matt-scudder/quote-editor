@@ -1,9 +1,9 @@
 import { ListGroup } from "react-bootstrap";
-import { RenderMatchHighlights } from "./MatchHighlighter";
+import RenderMatchHighlights from "./MatchHighlighter";
+import { useCallback } from "react";
 interface Props {
   items: string[];
   searchPattern: RegExp | undefined;
-  replaceText: string;
   selectedIndex: number;
   handleSelect: (index: number) => void;
 }
@@ -14,16 +14,17 @@ function QuoteList({
   selectedIndex,
   handleSelect,
 }: Props) {
+  const highlightFunc = useCallback((highlight: string) => <mark>{highlight}</mark>, []);
   return (
     <ListGroup numbered>
       {items.map((entry, i) => (
         <ListGroup.Item
           action
-          key={i + 1}
+          key={i}
           onClick={() => handleSelect(i)}
           active={selectedIndex === i}
         >
-          {RenderMatchHighlights(entry, searchPattern, (highlight) => <mark>{highlight}</mark>)}
+          <RenderMatchHighlights quoteText={entry} searchRegEx={searchPattern} highlightFunc={highlightFunc} />
         </ListGroup.Item>
       ))}
     </ListGroup>

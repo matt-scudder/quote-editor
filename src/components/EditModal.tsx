@@ -1,7 +1,6 @@
 import { Button, Form, Modal } from "react-bootstrap";
 
 interface Props {
-  showModal: boolean;
   modalTitle: string;
   existingQuoteText: string;
   handleClose: () => void;
@@ -9,14 +8,13 @@ interface Props {
 }
 
 function EditModal({
-  showModal,
   modalTitle,
   existingQuoteText,
   handleClose,
   handleSave,
 }: Props) {
-  return showModal && (
-    <Modal show={showModal} size="lg" onHide={handleClose}>
+  return (
+    <Modal show size="lg" onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>{modalTitle}</Modal.Title>
       </Modal.Header>
