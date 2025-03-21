@@ -1,78 +1,56 @@
-import {
-  Button,
-  ListGroup,
-  Modal,
-  ProgressBar,
-} from "react-bootstrap";
-import { useMemo, useState } from "react";
-import QuoteAPIUtils from "../utils/QuoteAPIUtils";
+import { Button, ListGroup, Modal, ProgressBar } from "react-bootstrap";
+import { useCallback } from "react";
+import RenderMatchHighlights from "./MatchHighlighter";
 import ReplacementEntry from "./ReplacementEntry";
-
-export type ReplaceableQuote = {
-  quoteText: string;
-  quoteNumber: number;
-  isSelected: boolean;
-};
+import QuoteAPIUtils from "../utils/QuoteAPIUtils";
+import { ReplaceableQuote, useQuoteReplacementLogic } from "./QuoteReplacementLogic";
 
 interface Props {
-  items: string[];
-  searchPattern: RegExp | undefined;
+  quoteList: string[];
+  searchPattern: RegExp;
   replaceText: string;
   quoteApi: QuoteAPIUtils;
   hideModal: () => void;
   refreshQuotes: () => void;
 }
 
-function ConfirmReplaceModal({
-  items,
-  searchPattern,
-  replaceText,
-  quoteApi,
-  hideModal,
-  refreshQuotes,
-}: Props) {
-  const [currentSubmittingIndex, setCurrentSubmittingIndex] = useState(-1);
-  const [currentSubmittingTotal, setCurrentSubmittingTotal] = useState(-1);
-  const [replaceableQuotes, setReplaceableQuotes] = useState<ReplaceableQuote[]>(
-    items.map((entry, i) => {
-      searchPattern!.lastIndex = 0;
-      if (searchPattern?.test(entry)) {
-        return { quoteNumber: i + 1, quoteText: entry, isSelected: true };
-      }
-    })
-    .filter<ReplaceableQuote>((x) => x != undefined)
+function ConfirmReplaceModal({quoteList, searchPattern, replaceText, quoteApi, hideModal, refreshQuotes}:Props) {
+  const {
+    replaceableQuotes,
+    submittingQuoteNum,
+    totalSubmitted,
+    totalToSubmit,
+    handleReplace,
+    setSelected,
+  } = useQuoteReplacementLogic({quoteList, searchPattern, replaceText, quoteApi, hideModal, refreshQuotes});
+
+  const removalHighlightFunc = useCallback(
+    (text: string) => <span className="text-bg-danger">{text}</span>,
+    []
+  );
+  const replacementHightlightFunc = useCallback(
+    () => <span className="text-bg-primary bg-gradient">{replaceText}</span>,
+    [replaceText]
   );
 
-  const totalToSubmit = useMemo(
-    () => replaceableQuotes.filter((rq) => rq.isSelected).length,
-    [replaceableQuotes]
-  );
-
-  const handleConfirmReplace = () => {
-    const quotesToReplace = replaceableQuotes.filter(quote => quote.isSelected);
-    setCurrentSubmittingTotal(0);
-    const promises = quotesToReplace.map((q, i) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          setCurrentSubmittingIndex(q.quoteNumber);
-          resolve(
-            quoteApi.SubmitEditQuote(
-              q.quoteNumber,
-              q.quoteText.replace(searchPattern!, replaceText)
-            ).then(() => setCurrentSubmittingTotal(i + 1))
-          );
-        }, 400 * i);
-      });
-    });
-
-    Promise.all(promises).then(() => {
-      setTimeout(() => setCurrentSubmittingIndex(-1), 250);
-      setTimeout(() => {
-        hideModal();
-        setCurrentSubmittingTotal(-1);
-        refreshQuotes();
-      }, 700);
-    });
+  function renderQuoteDiff(quote: ReplaceableQuote, searchPattern: RegExp) {
+    return (
+      <>
+        <span className="font-monospace">- </span>
+        {quote.isSelected ? (
+          <RenderMatchHighlights quoteText={quote.quoteText} searchRegEx={searchPattern} highlightFunc={removalHighlightFunc} />
+        ) : (
+          quote.quoteText
+        )}
+        <hr className="m-0" />
+        <span className="font-monospace">+ </span>
+        {quote.isSelected ? (
+          <RenderMatchHighlights quoteText={quote.quoteText} searchRegEx={searchPattern} highlightFunc={replacementHightlightFunc} />
+        ) : (
+          quote.quoteText
+        )}
+      </>
+    );
   };
 
   return (
@@ -84,13 +62,13 @@ function ConfirmReplaceModal({
         <ListGroup>
           {replaceableQuotes.map((rq: ReplaceableQuote) => (
             <ReplacementEntry
-              key={rq.quoteNumber}
-              quote={rq}
-              searchPattern={searchPattern}
-              replaceText={replaceText}
-              currentSubmittingIndex={currentSubmittingIndex}
-              setReplaceableQuotes={setReplaceableQuotes}
-            />
+              quoteNum={rq.quoteNumber}
+              isSelected={rq.isSelected}
+              submittingQuoteNum={submittingQuoteNum}
+              setSelected={setSelected}
+            >
+              {renderQuoteDiff(rq, searchPattern)}
+            </ReplacementEntry>
           ))}
         </ListGroup>
       </Modal.Body>
@@ -98,18 +76,15 @@ function ConfirmReplaceModal({
         <Button variant="secondary" onClick={hideModal}>
           Cancel
         </Button>
-        <Button
-          disabled={!replaceableQuotes.some((rq) => rq.isSelected)}
-          onClick={handleConfirmReplace}
-        >
+        <Button disabled={totalToSubmit === 0} onClick={handleReplace}>
           Submit Changes
         </Button>
       </Modal.Footer>
-      {currentSubmittingTotal >= 0 && (
+      {totalSubmitted >= 0 && (
         <ProgressBar
           className="m-2"
           animated
-          now={(currentSubmittingTotal * 100) / totalToSubmit}
+          now={(totalSubmitted * 100) / totalToSubmit}
         />
       )}
     </Modal>

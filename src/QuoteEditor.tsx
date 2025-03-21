@@ -113,8 +113,8 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
         handleSave={handleEditSave}
       />}
       {showReplaceModal && <ConfirmReplaceModal
-        items={items}
-        searchPattern={searchRegEx}
+        quoteList={items}
+        searchPattern={searchRegEx!}
         replaceText={replaceText}
         quoteApi={quoteAPI}
         hideModal={() => setShowReplaceModal(false)}
