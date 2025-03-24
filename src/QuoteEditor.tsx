@@ -27,8 +27,8 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
   const modalTitle = `${isAdd ? "Add" : "Edit"} Quote ${quoteNumber}`;
 
   const numResultsFound = useMemo(
-    () => items.filter((entry) =>
-      {if (searchRegEx !=null) searchRegEx.lastIndex = 0; return searchRegEx?.test(entry)}).length,
+    () => searchRegEx === undefined ? 0 : items.filter((entry) =>
+      {searchRegEx.lastIndex = 0; return searchRegEx?.test(entry)}).length,
     [items, searchRegEx]
   );
   const refreshQuotes = useCallback(() => setEditMade(val => !val), []);
@@ -36,7 +36,7 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
 
   useEffect(() => {
     setIsReloading(true);
-    quoteAPI.GetQuoteList().then((items) => {
+    quoteAPI.getQuoteList().then((items) => {
         setItems(items);
         setTimeout(() => setIsReloading(false), 150);
       });
@@ -49,9 +49,9 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
   const handleEditSave = (formData: FormData) => {
     const quoteText = `${formData.get("quoteText")}`;
     const response = isAdd ? (
-        quoteAPI.SubmitAddQuote(quoteText)
+        quoteAPI.submitAddQuote(quoteText)
       ) : (
-        quoteAPI.SubmitEditQuote(quoteNumber, quoteText)
+        quoteAPI.submitEditQuote(quoteNumber, quoteText)
       );
     response.then(
       () => {
@@ -90,7 +90,7 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
             {isReloading && <Col className="px-0 mb-2" xs="auto"><Spinner as={"span"} animation="border"/></Col>}
             <Col xs className="text-end">
               <OverlayTrigger placement="auto" delay={120} overlay={<Tooltip>Refresh Quote List</Tooltip>}>
-                <Button className="mb-2 border" variant="outline" onClick={() => setEditMade(val => !val)}>↻</Button>
+                <Button className="mb-2 border" variant="outline" onClick={refreshQuotes}>↻</Button>
               </OverlayTrigger>
             </Col>
           </Row>

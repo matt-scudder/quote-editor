@@ -11,16 +11,16 @@ export default class QuoteAPIUtils {
     this.#editToken = editToken;
   }
 
-  SubmitEditQuote(quoteNumber: number, replacementQuoteText: string) {
+  submitEditQuote(quoteNumber: number, replacementQuoteText: string) {
     replacementQuoteText = `${quoteNumber} ${replacementQuoteText}`;
-    return this.#SubmitQuoteChange(QuoteAPIUtils.#baseEditUrl, replacementQuoteText);
+    return this.#submitQuoteChange(QuoteAPIUtils.#baseEditUrl, replacementQuoteText);
   }
 
-  SubmitAddQuote(newQuoteText: string){
-    return this.#SubmitQuoteChange(QuoteAPIUtils.#baseAddUrl, newQuoteText);
+  submitAddQuote(newQuoteText: string){
+    return this.#submitQuoteChange(QuoteAPIUtils.#baseAddUrl, newQuoteText);
   }
 
-  #SubmitQuoteChange(baseUrl: string, quoteText: string){
+  #submitQuoteChange(baseUrl: string, quoteText: string){
     const params = new URLSearchParams({
       token: this.#editToken,
       data: quoteText,
@@ -29,7 +29,7 @@ export default class QuoteAPIUtils {
     return fetch(requestUrl, { mode: "no-cors" });
   }
 
-  async GetQuoteList(){
+  async getQuoteList(){
     const params = new URLSearchParams({token: this.#readToken});
     const requestUrl = QuoteAPIUtils.#baseListUrl + params;
     const responseText = await fetch(requestUrl).then(resp => resp.text());

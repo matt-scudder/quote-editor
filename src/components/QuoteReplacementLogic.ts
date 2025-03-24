@@ -59,7 +59,7 @@ export function useQuoteReplacementLogic({
           setSubmittingQuoteNum(q.quoteNumber);
           resolve(
             quoteApi
-              .SubmitEditQuote(
+              .submitEditQuote(
                 q.quoteNumber,
                 q.quoteText.replace(searchPattern!, replaceText)
               )
