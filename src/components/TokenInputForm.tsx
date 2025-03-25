@@ -15,7 +15,7 @@ const TokenInputForm = ({ submitTokens }: Props) => {
   return (
     <>
     <h2>Enter read and edit tokens</h2>
-    <Form onSubmit={() => submitTokens(readToken, editToken)}>
+    <Form onSubmit={(e) => {e.preventDefault(); submitTokens(readToken, editToken)}}>
         <Row>
             <Col sm={5}>
                 <Form.Group className='pb-2 mb-4 position-relative'>

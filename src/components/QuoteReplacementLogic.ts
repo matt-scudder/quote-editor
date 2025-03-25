@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import QuoteAPIUtils from "../utils/QuoteAPIUtils";
 
 export type ReplaceableQuote = {
@@ -11,7 +11,6 @@ interface Props {
   quoteList: string[];
   searchPattern: RegExp;
   replaceText: string;
-  quoteApi: QuoteAPIUtils;
   hideModal: () => void;
   refreshQuotes: () => void;
 }
@@ -20,10 +19,10 @@ export function useQuoteReplacementLogic({
   quoteList,
   searchPattern,
   replaceText,
-  quoteApi,
   hideModal,
   refreshQuotes,
 }: Props) {
+  const quoteApi: QuoteAPIUtils = useContext(QuoteAPIUtils.ApiContext)!;
   const [submittingQuoteNum, setSubmittingQuoteNum] = useState(-1);
   const [currentSubmittingTotal, setCurrentSubmittingTotal] = useState(-1);
   const [replaceableQuotes, setReplaceableQuotes] = useState<ReplaceableQuote[]>(

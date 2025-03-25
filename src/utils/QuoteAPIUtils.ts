@@ -1,4 +1,7 @@
+import { createContext } from "react";
+
 export default class QuoteAPIUtils {
+  static readonly ApiContext = createContext<QuoteAPIUtils|null>(null);
   readonly #readToken: string;
   readonly #editToken: string;
   static readonly #baseEditUrl = "https://twitch.center/customapi/editquote?"

@@ -1,18 +1,16 @@
 import { Button, Col, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import QuoteList from "./components/QuoteList";
 import EditModal from "./components/EditModal";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import FindReplaceForm from "./components/FindReplaceForm";
 import ConfirmReplaceModal from "./components/ConfirmReplaceModal";
 import QuoteAPIUtils from "./utils/QuoteAPIUtils";
 
 interface Props{
-  readToken: string,
-  editToken: string,
   setHasTokenError: (hadError: boolean) => void;
 }
 
-const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
+const QuoteEditor = ({setHasTokenError}: Props) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -32,7 +30,7 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
     [items, searchRegEx]
   );
   const refreshQuotes = useCallback(() => setEditMade(val => !val), []);
-  const quoteAPI = useMemo(() => new QuoteAPIUtils(readToken, editToken), [readToken, editToken]);
+  const quoteAPI: QuoteAPIUtils = useContext(QuoteAPIUtils.ApiContext)!;
 
   useEffect(() => {
     setIsReloading(true);
@@ -116,7 +114,6 @@ const QuoteEditor = ({readToken, editToken, setHasTokenError}: Props) => {
         quoteList={items}
         searchPattern={searchRegEx!}
         replaceText={replaceText}
-        quoteApi={quoteAPI}
         hideModal={() => setShowReplaceModal(false)}
         refreshQuotes={refreshQuotes}
       />}

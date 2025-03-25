@@ -2,19 +2,17 @@ import { Button, ListGroup, Modal, ProgressBar } from "react-bootstrap";
 import { useCallback } from "react";
 import RenderMatchHighlights from "./MatchHighlighter";
 import ReplacementEntry from "./ReplacementEntry";
-import QuoteAPIUtils from "../utils/QuoteAPIUtils";
 import { ReplaceableQuote, useQuoteReplacementLogic } from "./QuoteReplacementLogic";
 
 interface Props {
   quoteList: string[];
   searchPattern: RegExp;
   replaceText: string;
-  quoteApi: QuoteAPIUtils;
   hideModal: () => void;
   refreshQuotes: () => void;
 }
 
-function ConfirmReplaceModal({quoteList, searchPattern, replaceText, quoteApi, hideModal, refreshQuotes}:Props) {
+function ConfirmReplaceModal({quoteList, searchPattern, replaceText, hideModal, refreshQuotes}:Props) {
   const {
     replaceableQuotes,
     submittingQuoteNum,
@@ -22,7 +20,7 @@ function ConfirmReplaceModal({quoteList, searchPattern, replaceText, quoteApi, h
     totalToSubmit,
     handleReplace,
     setSelected,
-  } = useQuoteReplacementLogic({quoteList, searchPattern, replaceText, quoteApi, hideModal, refreshQuotes});
+  } = useQuoteReplacementLogic({quoteList, searchPattern, replaceText, hideModal, refreshQuotes});
 
   const removalHighlightFunc = useCallback(
     (text: string) => <span className="text-bg-danger">{text}</span>,
