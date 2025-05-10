@@ -1,22 +1,18 @@
 import { Button, Form, Modal } from "react-bootstrap";
 
 interface Props {
-  modalTitle: string;
-  existingQuoteText: string;
   handleClose: () => void;
   handleSave: (formData: FormData) => void;
 }
 
-function EditModal({
-  modalTitle,
-  existingQuoteText,
+function AddModal({
   handleClose,
   handleSave,
 }: Props) {
   return (
-    <Modal show size="lg" onHide={handleClose}>
+    <Modal show onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>{modalTitle}</Modal.Title>
+        <Modal.Title>Add Quote</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form action={handleSave}>
@@ -26,7 +22,6 @@ function EditModal({
               name="quoteText"
               type="text"
               autoComplete="off"
-              defaultValue={existingQuoteText}
               required
             />
             <Form.Control.Feedback type="invalid" tooltip>
@@ -45,4 +40,4 @@ function EditModal({
   );
 }
 
-export default EditModal;
+export default AddModal;

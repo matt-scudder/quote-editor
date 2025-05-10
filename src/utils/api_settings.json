@@ -1,0 +1,14 @@
+{
+    "apis": 
+    [
+        {
+            "apiName": "twitch center",
+            "apiSettings": {
+                "baseEditUrl": "https://twitch.center/customapi/editquote?",
+                "baseAddUrl": "https://twitch.center/customapi/addquote?",
+                "baseListUrl": "https://corsproxy.io/?url=https://twitch.center/customapi/quote/list?",
+                "baseDeleteUrl": "https://twitch.center/customapi/delquote?"
+            }
+        }
+    ]
+}

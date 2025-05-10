@@ -1,10 +1,11 @@
 import { Button, Col, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import QuoteList from "./components/QuoteList";
-import EditModal from "./components/EditModal";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import FindReplaceForm from "./components/FindReplaceForm";
+import AddModal from "./components/AddModal"
 import ConfirmReplaceModal from "./components/ConfirmReplaceModal";
 import QuoteAPIUtils from "./utils/QuoteAPIUtils";
+import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
 
 interface Props{
   setHasTokenError: (hadError: boolean) => void;
@@ -12,7 +13,8 @@ interface Props{
 
 const QuoteEditor = ({setHasTokenError}: Props) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [editMade, setEditMade] = useState(false);
   const [items, setItems] = useState<string[]>([]);
@@ -21,8 +23,6 @@ const QuoteEditor = ({setHasTokenError}: Props) => {
   const [isReloading, setIsReloading] = useState(true);
 
   const quoteNumber = selectedIndex + 1;
-  const isAdd = selectedIndex === items.length;
-  const modalTitle = `${isAdd ? "Add" : "Edit"} Quote ${quoteNumber}`;
 
   const numResultsFound = useMemo(
     () => searchRegEx === undefined ? 0 : items.filter((entry) =>
@@ -44,31 +44,56 @@ const QuoteEditor = ({setHasTokenError}: Props) => {
     setHasTokenError(true);
   }
 
-  const handleEditSave = (formData: FormData) => {
-    const quoteText = `${formData.get("quoteText")}`;
-    const response = isAdd ? (
-        quoteAPI.submitAddQuote(quoteText)
-      ) : (
-        quoteAPI.submitEditQuote(quoteNumber, quoteText)
-      );
+  const handleSubmitEdit = (quoteText: string) => {
+    const response = quoteAPI.submitEditQuote(quoteNumber, quoteText);
     response.then(
       () => {
         refreshQuotes();
         setSelectedIndex(-1);
       }
     );
-    setShowEditModal(false);
+    setShowAddModal(false);
+  }
+
+  const handleAddSave = (formData: FormData) => {
+    const quoteText = `${formData.get("quoteText")}`;
+    const response = quoteAPI.submitAddQuote(quoteText);
+    response.then(
+      () => {
+        refreshQuotes();
+        setSelectedIndex(-1);
+      }
+    );
+    setShowAddModal(false);
   };
 
-  const handleQuoteSelect = (i: number) => {
-    setSelectedIndex(i);
-    setShowEditModal(true);
-  };
-
-  const handleEditClose = () => {
-    setShowEditModal(false);
+  const handleAddClose = () => {
+    setShowAddModal(false);
     setSelectedIndex(-1);
   };
+
+  const handleQuoteDelete = (i: number) => {
+    setSelectedIndex(i);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteSave = () => {
+    const response = quoteAPI.submitDeleteQuote(quoteNumber);
+    response.then(
+      () => {
+        refreshQuotes();
+        setSelectedIndex(-1);
+      }
+    );
+    setShowDeleteModal(false);
+  }
+
+  const handleDeleteClose = () => {
+    setShowDeleteModal(false);
+    setSelectedIndex(-1);
+    refreshQuotes();
+  };
+
 
   return (
     <>
@@ -95,20 +120,26 @@ const QuoteEditor = ({setHasTokenError}: Props) => {
           <QuoteList
             items={items}
             searchPattern={searchRegEx}
-            handleSelect={handleQuoteSelect}
+            handleSelect={setSelectedIndex}
+            handleSubmitEdit={handleSubmitEdit}
+            handleDelete={handleQuoteDelete}
             selectedIndex={selectedIndex}
           />
-          <Button className="my-3" onClick={() => handleQuoteSelect(items.length)}>
+          <Button className="my-3" onClick={() => setShowAddModal(true)}>
             New Quote
           </Button>
         </Col>
       </Row>
 
-      {showEditModal && <EditModal
-        modalTitle={modalTitle}
-        existingQuoteText={items[selectedIndex]}
-        handleClose={handleEditClose}
-        handleSave={handleEditSave}
+      {showAddModal && <AddModal
+        handleClose={handleAddClose}
+        handleSave={handleAddSave}
+      />}
+      {showDeleteModal && <ConfirmDeleteModal
+        quoteNumber={quoteNumber}
+        quoteText={items[selectedIndex]}
+        handleClose={handleDeleteClose}
+        handleDelete={handleDeleteSave}
       />}
       {showReplaceModal && <ConfirmReplaceModal
         quoteList={items}

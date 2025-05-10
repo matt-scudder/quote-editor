@@ -3,6 +3,7 @@ import QuoteEditor from "./QuoteEditor";
 import TokenInputForm from "./components/TokenInputForm";
 import { useState } from "react";
 import QuoteAPIUtils from "./utils/QuoteAPIUtils";
+import './App.css'
 
 function App() {
   const searchParams = new URLSearchParams(window.location.search);
