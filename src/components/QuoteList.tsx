@@ -29,7 +29,6 @@ function QuoteList({
     <ListGroup>
       {items.map((entry, i) => (
         <ListGroup.Item
-          action
           key={i}
           active={selectedIndex === i}
         >
@@ -47,6 +46,7 @@ function QuoteList({
                         autoComplete="off"
                         defaultValue={entry}
                         onChange={(e) => setEditingText(e.target.value)}
+                        autoFocus
                       />
                 </Form> :
                 <RenderMatchHighlights quoteText={entry} searchRegEx={searchPattern} highlightFunc={highlightFunc} />

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 
 interface Props {
@@ -9,8 +10,9 @@ function AddModal({
   handleClose,
   handleSave,
 }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <Modal show onHide={handleClose}>
+    <Modal show onHide={handleClose} onEnter={() => inputRef.current?.focus()}>
       <Modal.Header closeButton>
         <Modal.Title>Add Quote</Modal.Title>
       </Modal.Header>
@@ -23,6 +25,7 @@ function AddModal({
               type="text"
               autoComplete="off"
               required
+              ref={inputRef}
             />
             <Form.Control.Feedback type="invalid" tooltip>
               You can not submit an empty quote
