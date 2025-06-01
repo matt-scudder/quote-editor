@@ -1,10 +1,9 @@
-import { Button, Col, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
-import QuoteList from "./components/QuoteList";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import FindReplaceForm from "./components/FindReplaceForm";
-import AddModal from "./components/AddModal"
-import ConfirmReplaceModal from "./components/ConfirmReplaceModal";
 import QuoteAPIUtils from "./utils/QuoteAPIUtils";
+import QuoteList from "./components/QuoteList";
+import FindReplaceForm from "./components/FindReplaceForm";
+import AddModal from "./components/AddModal";
+import ConfirmReplaceModal from "./components/ConfirmReplaceModal";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModal";
 
 interface Props{
@@ -94,43 +93,67 @@ const QuoteEditor = ({setHasTokenError}: Props) => {
     refreshQuotes();
   };
 
+  const handleBackToTokenEntry = () => {
+    setHasTokenError(false);
+    const url = new URL(window.location.href);
+    url.search = ""; // Clear all search parameters
+    window.history.replaceState({}, document.title, url.toString());
+    window.location.reload(); // Reloads the page to reset the state
+  };
 
   return (
     <>
-      <Row>
-        <Col className="my-3" sm={12} md={{ span: 5, order: "last" }} xl={{span: 4, order: "last"}}>
-          <h1>Find/Replace</h1>
-          <FindReplaceForm
-            handleSetRegEx={setSearchRegEx}
-            handleReplaceTextChange={setReplaceText}
-            setShowReplaceModal={setShowReplaceModal}
-            numResultsFound={numResultsFound}
-          />
-        </Col>
-        <Col className="my-3" sm={12} md={{ span: 7, order: "first" }} xl={{span: 8, order: "first"}}>
-          <Row className="align-items-end">
-            <Col xs="auto"><h1>Quotes</h1></Col>
-            {isReloading && <Col className="px-0 mb-2" xs="auto"><Spinner as={"span"} animation="border"/></Col>}
-            <Col xs className="text-end">
-              <OverlayTrigger placement="auto" delay={120} overlay={<Tooltip>Refresh Quote List</Tooltip>}>
-                <Button className="mb-2 border" variant="outline" onClick={refreshQuotes}>↻</Button>
-              </OverlayTrigger>
-            </Col>
-          </Row>
-          <QuoteList
-            items={items}
-            searchPattern={searchRegEx}
-            handleSelect={setSelectedIndex}
-            handleSubmitEdit={handleSubmitEdit}
-            handleDelete={handleQuoteDelete}
-            selectedIndex={selectedIndex}
-          />
-          <Button className="my-3" onClick={() => setShowAddModal(true)}>
+      <div className="flex flex-col md:flex-row-reverse gap-6 my-3">
+        <div className="md:w-2/5 xl:w-1/3">
+          <h1 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 py-1">Find/Replace</h1>
+          <div className="bg-gray-100 dark:bg-gray-800/70 rounded-lg p-4 shadow-sm">
+            <FindReplaceForm
+              handleSetRegEx={setSearchRegEx}
+              handleReplaceTextChange={setReplaceText}
+              setShowReplaceModal={setShowReplaceModal}
+              numResultsFound={numResultsFound}
+            />
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center mb-4 gap-2">
+            <button 
+              className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" 
+              title="Back to Token Entry" 
+              onClick={handleBackToTokenEntry}
+            >
+              ←
+            </button>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Quotes</h1>
+            {isReloading && <span className="ml-2 animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></span>}
+            <div className="flex-1 text-end">
+              <button 
+                className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" 
+                title="Refresh Quote List" 
+                onClick={refreshQuotes}
+              >
+                ↻
+              </button>
+            </div>
+          </div>
+          <div className="bg-gray-100 dark:bg-gray-800/70 rounded-lg p-4 shadow-sm">
+            <QuoteList
+              items={items}
+              searchPattern={searchRegEx}
+              handleSelect={setSelectedIndex}
+              handleSubmitEdit={handleSubmitEdit}
+              handleDelete={handleQuoteDelete}
+              selectedIndex={selectedIndex}
+            />
+          </div>
+          <button 
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200 shadow-sm" 
+            onClick={() => setShowAddModal(true)}
+          >
             New Quote
-          </Button>
-        </Col>
-      </Row>
-
+          </button>
+        </div>
+      </div>
       {showAddModal && <AddModal
         handleClose={handleAddClose}
         handleSave={handleAddSave}

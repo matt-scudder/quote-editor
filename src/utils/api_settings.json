@@ -2,7 +2,7 @@
     "apis": 
     [
         {
-            "apiName": "twitch center",
+            "apiName": "Twitch Center",
             "apiSettings": {
                 "baseEditUrl": "https://twitch.center/customapi/editquote?",
                 "baseAddUrl": "https://twitch.center/customapi/addquote?",

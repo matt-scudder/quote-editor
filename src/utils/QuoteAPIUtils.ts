@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import apiSettingsList from "./api_settings.json";
 
 type ApiSettings = {
   "baseEditUrl": string;
@@ -14,10 +13,10 @@ export default class QuoteAPIUtils {
   readonly #editToken: string;
   readonly #apiSettings: ApiSettings;
 
-  constructor(readToken: string, editToken:string) {
+  constructor(readToken: string, editToken: string, apiSettings: ApiSettings) {
     this.#readToken = readToken;
     this.#editToken = editToken;
-    this.#apiSettings = apiSettingsList.apis[0].apiSettings;
+    this.#apiSettings = apiSettings;
   }
 
   submitEditQuote(quoteNumber: number, replacementQuoteText: string) {

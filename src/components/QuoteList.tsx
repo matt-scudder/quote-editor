@@ -1,6 +1,6 @@
-import { Button, Col, Form, ListGroup, Row } from "react-bootstrap";
-import RenderMatchHighlights from "./MatchHighlighter";
 import { useCallback, useState } from "react";
+import RenderMatchHighlights from "./MatchHighlighter";
+
 interface Props {
   items: string[];
   searchPattern: RegExp | undefined;
@@ -25,46 +25,65 @@ function QuoteList({
     event.preventDefault();
     handleSubmitEdit(editingText);
   }
-  return (
-    <ListGroup>
-      {items.map((entry, i) => (
-        <ListGroup.Item
-          key={i}
-          active={selectedIndex === i}
-        >
-          <Row className="align-items-center">
-            { selectedIndex === i ?
-              <Col xs="auto" className="px-1"><Button className="m-0 p-1 border" variant="outline" onClick={() => handleSelect(-1)}>❌</Button></Col> :
-              <Col xs="auto" className="pe-1">{i+1}.</Col>
-            }
-            <Col className="px-2" >
-              {selectedIndex === i ? 
-              <Form onSubmit={handleSubmit}>
-                <Form.Control
-                        name="replaceText"
-                        inputMode="text"
-                        autoComplete="off"
-                        defaultValue={entry}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        autoFocus
-                      />
-                </Form> :
-                <RenderMatchHighlights quoteText={entry} searchRegEx={searchPattern} highlightFunc={highlightFunc} />
-              }
-              
-            </Col>
-            {selectedIndex === i ?
-              <Col xs="auto" className="px-1"><Button className="m-0 py-1 px-2 border" variant="outline" onClick={() => handleSubmitEdit(editingText)}>➤</Button></Col> :
-              <>
-                <Col xs="auto" className="px-1"><Button className="m-0 px-1 py-0 border" variant="outline" onClick={() => handleSelect(i)}>✎</Button></Col>
-                <Col xs="auto" className="px-1"><Button className="m-0 p-0 border" variant="outline" onClick={() => handleDelete(i)}>🗑</Button></Col>
-              </>
-            }
 
-          </Row>
-        </ListGroup.Item>
+  return (
+    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      {items.map((entry, i) => (
+        <li
+          key={i}
+          className={`flex items-start py-2 px-3 min-h-[3rem] rounded-md my-1 ${selectedIndex === i ? 'bg-blue-100 dark:bg-blue-900' : 'bg-white dark:bg-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+        >
+          {selectedIndex === i ? (
+            <button className="mr-2 p-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:border-gray-600 self-center" onClick={() => handleSelect(-1)} title="Cancel Edit">❌</button>
+          ) : (
+            <span className="mr-2 py-1 w-8 text-right text-gray-500 dark:text-gray-400">{i + 1}.</span>
+          )}
+          <div className="flex-1 px-2 self-stretch">
+            {selectedIndex === i ? (
+              <form onSubmit={handleSubmit} className="flex h-full">
+                <textarea
+                  name="replaceText"
+                  defaultValue={entry}
+                  onChange={(e) => {
+                    setEditingText(e.target.value);
+                    // Reset height to auto first to handle text deletion
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  onFocus={(e) => {
+                    // Also adjust height when focused, in case of long initial text
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") handleSelect(-1);
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSubmitEdit(editingText);
+                    }
+                  }}
+                  className="flex-1 border rounded px-2 py-1 mr-2 resize-none overflow-hidden dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  style={{ minHeight: '1.5rem' }}
+                />
+              </form>
+            ) : (
+              <div className="py-1">
+                <RenderMatchHighlights quoteText={entry} searchRegEx={searchPattern} highlightFunc={highlightFunc} />
+              </div>
+            )}
+          </div>
+          {selectedIndex === i ? (
+            <button className="ml-2 px-2 py-1 border rounded bg-blue-500 text-white hover:bg-blue-600 self-center" onClick={() => handleSubmitEdit(editingText)} title="Save Edit">➤</button>
+          ) : (
+            <>
+              <button className="ml-2 px-2 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200" onClick={() => handleSelect(i)} title="Edit">✎</button>
+              <button className="ml-2 px-2 py-1 border rounded hover:bg-red-100 dark:hover:bg-red-900 dark:text-gray-200" onClick={() => handleDelete(i)} title="Delete">🗑</button>
+            </>
+          )}
+        </li>
       ))}
-    </ListGroup>
+    </ul>
   );
 }
 
