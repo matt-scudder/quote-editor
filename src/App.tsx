@@ -1,24 +1,50 @@
 import QuoteEditor from "./QuoteEditor";
 import TokenInputForm from "./components/TokenInputForm";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react"; // Import useEffect and useMemo
 import QuoteAPIUtils from "./utils/QuoteAPIUtils";
-import apiSettingsList from "./utils/api_settings.json";
 import DarkModeToggle from "./components/DarkModeToggle";
 import './App.css'
+import { fetchApiSettingsConfiguration, ApiSettingsList, ApiSetting } from './utils/settingsLoader';
 
 function App() {
-  const searchParams = new URLSearchParams(window.location.search);
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const [readToken, setReadToken] = useState(searchParams.get("readToken"));
   const [editToken, setEditToken] = useState(searchParams.get("editToken"));
   const [hasTokenError, setHasTokenError] = useState(false);
-  const apiParam = searchParams.get("api");
-  const initialApi = apiParam
-    ? apiSettingsList.apis.find(api => api.apiName === apiParam) || apiSettingsList.apis[0]
-    : apiSettingsList.apis[0];
-  const [selectedApi, setSelectedApi] = useState(initialApi);
+
+  const [apiSettingsList, setApiSettingsList] = useState<ApiSettingsList | null>(null);
+  const [selectedApi, setSelectedApi] = useState<ApiSetting | null>(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      setIsLoadingSettings(true);
+      const result = await fetchApiSettingsConfiguration();
+      
+      if (result.success) {
+        setApiSettingsList(result.data);
+        const apiParam = searchParams.get("api");
+        const initialSelectedApi = apiParam ? 
+          result.data.apis.find(api => api.apiName === apiParam) || result.data.apis[0]
+          : result.data.apis[0];
+        setSelectedApi(initialSelectedApi);
+        setSettingsError(null);
+      } else {
+        setSettingsError(result.error);
+        setApiSettingsList(null);
+        setSelectedApi(null);
+      }
+      setIsLoadingSettings(false);
+    };
+
+    loadSettings();
+  }, [searchParams]); // Added searchParams to dependency array
+
   const showQuoteEditor = readToken && editToken && !hasTokenError;
 
   const handleApiChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!apiSettingsList) return;
     const apiName = event.target.value;
     const api = apiSettingsList.apis.find(api => api.apiName === apiName);
     if (api) {
@@ -27,6 +53,18 @@ function App() {
   };
 
   const renderContent = () => {
+    if (isLoadingSettings) {
+      return <div className="text-center p-4">Loading API settings...</div>;
+    }
+
+    if (settingsError) {
+      return <div className="text-center p-4 text-red-500">{settingsError}</div>;
+    }
+
+    if (!apiSettingsList || !selectedApi) {
+      return <div className="text-center p-4 text-red-500">API settings not available.</div>;
+    }
+
     if (showQuoteEditor) {
       const quoteApi = new QuoteAPIUtils(readToken, editToken, selectedApi.apiSettings);
       return (
@@ -43,7 +81,7 @@ function App() {
               id="apiSelect" 
               className="form-select block w-auto rounded-lg border border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 shadow-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200 p-2"
               onChange={handleApiChange}
-              value={selectedApi.apiName} // Ensure the select shows the current selectedApi
+              value={selectedApi.apiName} 
             >
               {apiSettingsList.apis.map(api => (
                 <option key={api.apiName} value={api.apiName} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100">
