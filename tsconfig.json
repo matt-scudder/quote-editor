@@ -1,5 +1,19 @@
 {
-  "files": [],
+  "compilerOptions": {
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx" // Added jsx compiler option
+  },
+  "include": [
+    "src",
+    "vite.config.ts",
+    "src/**/*.test.ts", // Ensure test files are included for TS processing
+    "src/**/*.test.tsx" // Ensure test files are included for TS processing
+  ],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }

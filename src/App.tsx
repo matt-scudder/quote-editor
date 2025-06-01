@@ -58,7 +58,7 @@ function App() {
     }
 
     if (settingsError) {
-      return <div className="text-center p-4 text-red-500">{settingsError}</div>;
+      return <div className="text-center p-4 text-red-500">Could not load API configuration: {settingsError}</div>;
     }
 
     if (!apiSettingsList || !selectedApi) {

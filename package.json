@@ -6,8 +6,8 @@
   "homepage": "https://matt-scudder.github.io/quote-editor/",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build --base=/quote-editor/",
-    "buildatroot": "tsc -b && vite build --base=/",
+    "build": "tsc -b tsconfig.app.json && vite build --base=/quote-editor/",
+    "buildatroot": "tsc -b tsconfig.app.json && vite build --base=/",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest"
